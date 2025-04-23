@@ -4,6 +4,7 @@ import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
 import { Filter } from "@/components/Filter";
 import { FilterStatus } from "@/types/filterStatus";
+import { Item } from "@/components/Item";
 
 const FILTER_STATUS: FilterStatus[] = [FilterStatus.PENDING, FilterStatus.DONE];
 
@@ -27,6 +28,12 @@ export function Home() {
             <Text style={styles.clearText}>Limpar</Text>
           </TouchableOpacity>
         </View>
+
+        <Item
+          data={{ description: "Shampoo", status: FilterStatus.DONE }}
+          onRemove={() => console.log("remover")}
+          onToggleStatus={() => console.log("toggle status")}
+        />
       </View>
     </View>
   );
