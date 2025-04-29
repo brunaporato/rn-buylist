@@ -27,10 +27,6 @@ export function Home() {
     }
   }
 
-  useEffect(() => {
-    getItemsByStatus()
-  }, [filter])
-
   async function handleAddItem() {
     if (!description.trim()) {
       return Alert.alert("Adicionar", "Informe a descrição para adicionar.")
@@ -45,7 +41,43 @@ export function Home() {
     await itemsStorage.add(newItem)
     await getItemsByStatus()
     setDescription("")
+    setFilter(FilterStatus.PENDING)
   }
+
+  async function handleRemoveItem(id: string) {
+    try {
+      await itemsStorage.remove(id)
+      await getItemsByStatus()
+    } catch (error) {
+      console.log(error)
+      Alert.alert("Remover", "Não foi possível remover o item.")
+    }
+  }
+
+  function handleClearItems() {
+    Alert.alert("Limpar", "Deseja remover todos os itens?", [
+      {
+        text: "Cancelar",
+        style: "cancel"
+      },
+      {
+        text: "Limpar",
+        onPress: async () => {
+          try {
+            await itemsStorage.clear()
+            setItems([])
+          } catch (error) {
+            console.log(error)
+            Alert.alert("Limpar", "Não foi possível limpar os itens.")
+          }
+        }
+      }
+    ])
+  }
+
+  useEffect(() => {
+    getItemsByStatus()
+  }, [filter])
 
   return (
     <View style={styles.container}>
@@ -62,7 +94,7 @@ export function Home() {
             <Filter key={status} status={status} isActive={status === filter} onPress={() => setFilter(status)} />
           ))}
 
-          <TouchableOpacity activeOpacity={0.8} style={styles.clearButton}>
+          <TouchableOpacity activeOpacity={0.8} style={styles.clearButton} onPress={handleClearItems}>
             <Text style={styles.clearText}>Limpar</Text>
           </TouchableOpacity>
         </View>
@@ -73,7 +105,7 @@ export function Home() {
           renderItem={({item}) => (
             <Item
               data={item}
-              onRemove={() => console.log("remover")}
+              onRemove={() => handleRemoveItem(item.id)}
               onToggleStatus={() => console.log("toggle status")}
             />
           )}
