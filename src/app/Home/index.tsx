@@ -1,43 +1,58 @@
-import { Image, TouchableOpacity, View, Text, FlatList } from "react-native";
+import { Image, TouchableOpacity, View, Text, FlatList, Alert } from "react-native";
 import { styles } from "./styles";
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
 import { Filter } from "@/components/Filter";
 import { FilterStatus } from "@/types/filterStatus";
 import { Item } from "@/components/Item";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { itemsStorage, ItemStorage } from "@/storage/itemsStorage";
 
 const FILTER_STATUS: FilterStatus[] = [FilterStatus.PENDING, FilterStatus.DONE];
-const ITEMS = [
-  { id: "1", description: "1 pacote de arroz", status: FilterStatus.DONE },
-  {
-    id: "2",
-    description: "3 pacotes de macarrão",
-    status: FilterStatus.PENDING,
-  },
-  { id: "3", description: "1 pacote de feijão", status: FilterStatus.PENDING },
-  { id: "4", description: "1 pacote de açúcar", status: FilterStatus.DONE },
-  { id: "5", description: "1 pacote de sal", status: FilterStatus.PENDING },
-  { id: "6", description: "1 café", status: FilterStatus.DONE },
-  { id: "7", description: "1l de leite", status: FilterStatus.PENDING },
-  { id: "8", description: "5 pães", status: FilterStatus.DONE },
-  { id: "9", description: "1 manteiga", status: FilterStatus.PENDING },
-  { id: "10", description: "300g de queijo", status: FilterStatus.DONE },
-  { id: "11", description: "150g de presunto", status: FilterStatus.PENDING },
-  { id: "12", description: "1kg de peito de frango", status: FilterStatus.DONE },
-];
+
 
 export function Home() {
   const [filter, setFilter] = useState(FilterStatus.PENDING)
   const [description, setDescription] = useState("")
+  const [items, setItems] = useState<ItemStorage[]>([])
+
+  async function getItems() {
+    try {
+      const response = await itemsStorage.get()
+      setItems(response)
+
+    } catch (error) {
+      console.log(error)
+      Alert.alert("Erro", "Não foi possível carregar os itens.")
+    }
+  }
+
+  useEffect(() => {
+    getItems()
+  }, [])
+
+  function handleAddItem() {
+    if (!description.trim()) {
+      return Alert.alert("Adicionar", "Informe a descrição para adicionar.")
+    }
+
+    const newItem = {
+      id: Math.random().toString(36).substring(2),
+      description,
+      status: FilterStatus.PENDING
+    }
+
+    setItems((prevState) => [...prevState, newItem])
+    setDescription("")
+  }
 
   return (
     <View style={styles.container}>
       <Image source={require("@/assets/logo.png")} style={styles.logo} />
 
       <View style={styles.form}>
-        <Input placeholder="O que você precisa comprar?" onChangeText={setDescription} />
-        <Button title="Adicionar" />
+        <Input placeholder="O que você precisa comprar?" onChangeText={setDescription} value={description} />
+        <Button title="Adicionar" onPress={handleAddItem} />
       </View>
 
       <View style={styles.content}>
@@ -52,7 +67,7 @@ export function Home() {
         </View>
 
         <FlatList
-          data={ITEMS}
+          data={items}
           keyExtractor={(item) => item.id}
           renderItem={({item}) => (
             <Item
