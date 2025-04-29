@@ -24,8 +24,25 @@ async function getByStatus(status: FilterStatus) {
     return items.filter((item: ItemStorage) => item.status === status)
 }
 
+async function save(items: ItemStorage[]) {
+    try {
+        await AsyncStorage.setItem(ITEMS_STORAGE_KEY, JSON.stringify(items))
+    } catch (error) {
+        throw new Error("SAVE_ITEMS: " + error)
+    }
+}
+
+async function add(newItem: ItemStorage) {
+    const items = await get()
+    const updatedItems = [...items, newItem]
+    await save(updatedItems)
+
+    return updatedItems
+}
+
 
 export const itemsStorage = {
     get,
     getByStatus,
+    add,
 }
