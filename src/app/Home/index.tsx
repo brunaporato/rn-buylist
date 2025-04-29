@@ -75,6 +75,16 @@ export function Home() {
     ])
   }
 
+  async function handleToggleItemStatus(id: string) {
+    try {
+      await itemsStorage.toggleStatus(id)
+      await getItemsByStatus()
+    } catch (error) {
+      console.log(error)
+      Alert.alert("Alterar", "Não foi possível alterar o status do item.")
+    }
+  }
+
   useEffect(() => {
     getItemsByStatus()
   }, [filter])
@@ -106,7 +116,7 @@ export function Home() {
             <Item
               data={item}
               onRemove={() => handleRemoveItem(item.id)}
-              onToggleStatus={() => console.log("toggle status")}
+              onToggleStatus={() => handleToggleItemStatus(item.id)}
             />
           )}
           showsVerticalScrollIndicator={false}
